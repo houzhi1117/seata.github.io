@@ -51,3 +51,15 @@ A:
     2.服务a rpc 服务b超时（dubbo、feign等默认1秒超时），a上抛异常给tm，tm通知tc回滚，但是b还是收到了请求（网络延迟或rpc框架重试），然后去tc注册时发现全局事务已在回滚
     3.tc感知全局事务超时(@GlobalTransactional(timeoutMills = 默认60秒))，主动变更状态并通知各分支事务回滚，此时有新的分支事务来注册
 ```
+
+## Q: Nacos 作为 Seata 配置中心时,项目启动报错找不到服务,如何排除,如何处理
+
+```
+A:
+    异常：io.seata.common.exception.FrameworkException: can not register RM,err:can not connect to services-server.
+   1.nacos服务列表查看serverAddr是否已经注册成功
+   2.检查client端的的registry.conf里面的namespace,nacos config会使用一个空字符串作为默认参数初始化.server端和client端对应.namespace为public是nacos的一个保留控件,如果您需要创建自己的namaspace,最好不要和public重名,以一个实际业务场景有具体语义的名字来命名
+   3.nacos上服务列表,serverAddr地址对ip地址应为seata启动指定ip地址, 如:sh seata-server.sh -p 8091 -h 122.51.204.197 -m file
+   4.使用telnet ip 端口 查看端口是否开放,以及防火墙状态
+   注：1.080版本启动指定ip问题,会出现cannot assign request address,请升级到081以上版本
+    
